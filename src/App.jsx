@@ -20,8 +20,15 @@ function App() {
 
   // Fetch API Todos
   useEffect(() => {
+    const apiUrl = import.meta.env.VITE_REACT_APP_KEY; // Get the API URL from environment variable
+
+    if (!apiUrl) {
+      console.error("API URL is not defined in the environment variables!");
+      return;
+    }
+
     axios
-      .get("https://dummyjson.com/todos")
+      .get(apiUrl)
       .then((response) => {
         // Add a "source" property to differentiate API todos
         const todosWithSource = response.data.todos.map((todo) => ({
