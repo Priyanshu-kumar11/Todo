@@ -8,9 +8,9 @@ const TodoList = () => {
     todosToDisplay = [],
     updateTodo,
     deleteTodo,
-    nextPage,
-    prevPage,
     currPage,
+    setCurrPage,
+    totalPages,
   } = useTodo();
 
   const [editIndex, setEditIndex] = useState(-1);
@@ -35,6 +35,24 @@ const TodoList = () => {
     deleteTodo(id, source);
     setEditIndex(-1);
     setInputText("");
+  };
+
+  const renderPageNumbers = () => {
+    const pageNumbers = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pageNumbers.push(
+        <button
+          key={i}
+          onClick={() => setCurrPage(i)}
+          className={`px-4 py-2 mx-1 rounded-lg ${
+            currPage === i ? "bg-blue-700 text-white" : "bg-gray-200"
+          } hover:bg-blue-900 hover:text-white transition duration-200`}
+        >
+          {i}
+        </button>
+      );
+    }
+    return pageNumbers;
   };
 
   return (
@@ -84,21 +102,8 @@ const TodoList = () => {
           <p>No Todos available</p>
         )}
       </ul>
-      <div className="flex justify-between mt-4">
-        <button
-          onClick={prevPage}
-          disabled={currPage === 1}
-          className="bg-blue-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 hover:bg-blue-900"
-        >
-          Previous
-        </button>
-        <button
-          onClick={nextPage}
-          disabled={todosToDisplay.length === 0}
-          className="bg-blue-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 hover:bg-blue-900"
-        >
-          Next
-        </button>
+      <div className="flex justify-center mt-4 flex-wrap space-x-2">
+        {renderPageNumbers()}
       </div>
     </div>
   );

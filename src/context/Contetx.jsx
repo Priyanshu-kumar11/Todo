@@ -1,6 +1,13 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
-import { db } from "../../firebase"; 
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
+import { db } from "../../firebase";
 import axios from "axios";
 
 // Create the context
@@ -8,14 +15,14 @@ const TodoContext = createContext();
 
 // Create the provider component
 export const TodoProvider = ({ children }) => {
-  const [listTodo, setListTodo] = useState([]); // Firestore todos
-  const [apiTodos, setApiTodos] = useState([]); // API todos
+  const [listTodo, setListTodo] = useState([]); 
+  const [apiTodos, setApiTodos] = useState([]);
   const [currPage, setCurrPage] = useState(1);
-  const rowsPerPage = 5; // Rows per page set to 5
+  const rowsPerPage = 5; 
 
   // Fetch API Todos
   useEffect(() => {
-    const apiUrl = import.meta.env.VITE_REACT_APP_KEY; // Get the API URL from environment variable
+    const apiUrl = import.meta.env.VITE_REACT_APP_KEY; 
     if (!apiUrl) {
       console.error("API URL is not defined in the environment variables!");
       return;
@@ -26,8 +33,8 @@ export const TodoProvider = ({ children }) => {
       .then((response) => {
         const todosWithSource = response.data.todos.map((todo) => ({
           ...todo,
-          id: String(todo.id), // Ensure IDs are strings
-          source: "api", // Mark as API todo
+          id: String(todo.id), 
+          source: "api", 
         }));
         setApiTodos(todosWithSource);
       })
@@ -43,7 +50,7 @@ export const TodoProvider = ({ children }) => {
         snapshot.docs.map((doc) => ({
           id: doc.id,
           todo: doc.data().todo,
-          source: "firestore", // Mark as Firestore todo
+          source: "firestore", 
         }))
       );
     });
@@ -104,23 +111,11 @@ export const TodoProvider = ({ children }) => {
 
   // Combine todos and apply pagination
   const combinedTodos = [...listTodo, ...apiTodos];
+  const totalPages = Math.ceil(combinedTodos.length / rowsPerPage);
   const todosToDisplay = combinedTodos.slice(
     (currPage - 1) * rowsPerPage,
     currPage * rowsPerPage
   );
-
-  // Handle page change
-  const nextPage = () => {
-    if ((currPage * rowsPerPage) < combinedTodos.length) {
-      setCurrPage(currPage + 1);
-    }
-  };
-
-  const prevPage = () => {
-    if (currPage > 1) {
-      setCurrPage(currPage - 1);
-    }
-  };
 
   return (
     <TodoContext.Provider
@@ -129,9 +124,9 @@ export const TodoProvider = ({ children }) => {
         todosToDisplay,
         updateTodo,
         deleteTodo,
-        nextPage,
-        prevPage,
         currPage,
+        setCurrPage,
+        totalPages,
       }}
     >
       {children}

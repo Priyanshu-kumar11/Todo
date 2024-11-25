@@ -4,10 +4,10 @@ import {
   createUserWithEmailAndPassword 
 } from "firebase/auth";
 import { doc, setDoc, getFirestore } from "firebase/firestore";
-import { auth } from "../../firebase"; // Ensure correct Firebase auth import
+import { auth } from "../../firebase";
 import { toast } from "react-toastify";
 
-const firestore = getFirestore(); // Initialize Firestore
+const firestore = getFirestore(); 
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState("");
