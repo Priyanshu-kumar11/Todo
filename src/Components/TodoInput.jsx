@@ -1,14 +1,18 @@
 import React, { useState } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { IoIosSearch } from "react-icons/io";
+import { useTodo } from "../context/Contetx";
 
-const TodoInput = ({ addList }) => {
+const TodoInput = () => {
   const [inputText, setInputText] = useState("");
+  const { addList } = useTodo();
 
   const handleAddClick = () => {
-    if (inputText.trim() !== "") {  
+    if (inputText.trim() !== "") {
       addList(inputText);
-      setInputText("");  
+      setInputText("");
+    } else {
+      alert("Todo cannot be empty!");
     }
   };
 
@@ -19,18 +23,16 @@ const TodoInput = ({ addList }) => {
           type="text"
           placeholder="Enter your todo"
           className="border-2 border-blue-500 hover:border-blue-700 focus:border-blue-700 focus:ring-2 focus:ring-blue-300 rounded-full px-4 py-2 w-full sm:w-80 outline-none"
-          value={inputText} 
-          onChange={(e) => setInputText(e.target.value)} 
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
         />
-
         <div className="flex space-x-4 sm:space-x-2 w-full sm:w-auto mt-4 sm:mt-0">
           <button
-            onClick={handleAddClick}  
+            onClick={handleAddClick}
             className="flex items-center justify-center w-12 h-12 rounded-full text-blue-500 text-2xl hover:bg-blue-700 shadow-md"
           >
             <CiCirclePlus />
           </button>
-
           <button className="flex items-center justify-center w-12 h-12 rounded-full text-blue-500 text-2xl hover:bg-blue-700 shadow-md">
             <IoIosSearch />
           </button>
