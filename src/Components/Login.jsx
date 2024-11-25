@@ -1,43 +1,56 @@
 import { useState } from "react";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase"; // Ensure correct firebase config import
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword 
+} from "firebase/auth";
+import { doc, setDoc, getFirestore } from "firebase/firestore";
+import { auth } from "../../firebase"; // Ensure correct Firebase auth import
 import { toast } from "react-toastify";
+
+const firestore = getFirestore(); // Initialize Firestore
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isRegister, setIsRegister] = useState(false); // To toggle between Login and Register forms
+  const [isRegister, setIsRegister] = useState(false); // Toggle between Login/Register
 
-  // Login form submission handler
+  // Handle Login
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log("User logged in successfully");
-      onLogin(); // Call onLogin when login is successful
+      onLogin(userCredential.user.uid); // Pass uid to parent component
       toast.success("User logged in successfully", {
         position: "top-center",
       });
     } catch (error) {
-      console.log(error.message);
+      console.error(error.message);
       toast.error(error.message, {
         position: "bottom-center",
       });
     }
   };
 
-  // Register form submission handler
+  // Handle Register
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log("User registered successfully");
-      onLogin(); // Call onLogin when registration is successful
+
+      // Add user-specific data in Firestore
+      await setDoc(doc(firestore, "users", userCredential.user.uid), {
+        email: userCredential.user.email,
+        createdAt: new Date(),
+      });
+
+      onLogin(userCredential.user.uid); // Pass uid to parent component
       toast.success("User registered successfully", {
         position: "top-center",
       });
     } catch (error) {
-      console.log(error.message);
+      console.error(error.message);
       toast.error(error.message, {
         position: "bottom-center",
       });
@@ -47,16 +60,12 @@ function Login({ onLogin }) {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
-        {/* Toggle between Login and Register Titles */}
         <h3 className="text-2xl font-semibold text-center mb-6 text-gray-800">
           {isRegister ? "Register" : "Login"}
         </h3>
         <form onSubmit={isRegister ? handleRegister : handleLogin}>
           <div className="mb-4">
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
               Email Address
             </label>
             <input
@@ -70,10 +79,7 @@ function Login({ onLogin }) {
             />
           </div>
           <div className="mb-4">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
               Password
             </label>
             <input
@@ -94,7 +100,6 @@ function Login({ onLogin }) {
           </button>
         </form>
         <p className="mt-4 text-center text-sm text-gray-600">
-          {/* Toggle between Login and Register links */}
           {isRegister ? (
             <>
               Already have an account?{" "}
