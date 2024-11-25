@@ -16,44 +16,60 @@ const TodoContext = createContext();
 // Create the provider component
 export const TodoProvider = ({ children }) => {
   const [listTodo, setListTodo] = useState([]); 
-  const [apiTodos, setApiTodos] = useState([]);
+  const [apiTodos, setApiTodos] = useState([]); // API todos
   const [currPage, setCurrPage] = useState(1);
+  const [loading, setLoading] = useState(false); 
   const rowsPerPage = 5; 
 
   // Fetch API Todos
   useEffect(() => {
-    const apiUrl = import.meta.env.VITE_REACT_APP_KEY; 
-    if (!apiUrl) {
-      console.error("API URL is not defined in the environment variables!");
-      return;
-    }
+    const fetchApiTodos = async () => {
+      // Get the API URL from environment variable
+      const apiUrl = import.meta.env.VITE_REACT_APP_KEY; 
+      if (!apiUrl) {
+        console.error("API URL is not defined in the environment variables!");
+        return;
+      }
 
-    axios
-      .get(apiUrl)
-      .then((response) => {
+      setLoading(true); // Start loading
+      try {
+        const response = await axios.get(apiUrl);
         const todosWithSource = response.data.todos.map((todo) => ({
           ...todo,
-          id: String(todo.id), 
+          id: String(todo.id), // Ensuring that the IDs are strings
           source: "api", 
         }));
         setApiTodos(todosWithSource);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error fetching API todos:", error);
-      });
+      } finally {
+        setLoading(false); // End loading
+      }
+    };
+
+    fetchApiTodos();
   }, []);
 
   // Firestore listener
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "todo"), (snapshot) => {
-      setListTodo(
-        snapshot.docs.map((doc) => ({
-          id: doc.id,
-          todo: doc.data().todo,
-          source: "firestore", 
-        }))
-      );
-    });
+    setLoading(true); // Start loading
+    const unsubscribe = onSnapshot(
+      collection(db, "todo"),
+      (snapshot) => {
+        setListTodo(
+          snapshot.docs.map((doc) => ({
+            id: doc.id,
+            todo: doc.data().todo,
+            source: "firestore", // Mark as Firestore todo
+          }))
+        );
+        setLoading(false); // End loading
+      },
+      (error) => {
+        console.error("Error fetching Firestore todos:", error);
+        setLoading(false); // End loading
+      }
+    );
     return () => unsubscribe();
   }, []);
 
@@ -127,6 +143,7 @@ export const TodoProvider = ({ children }) => {
         currPage,
         setCurrPage,
         totalPages,
+        loading, 
       }}
     >
       {children}
